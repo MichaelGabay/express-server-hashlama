@@ -1,0 +1,4 @@
+{
+    "refreshTokenExpires": "30d",
+    "accessTokenExpires": "5s"
+}
