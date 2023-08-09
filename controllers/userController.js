@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { signUpRequest, getUserRequest, updateRefreshTojenRequest } = require("../services/userService")
+const { signUpRequest, getUserRequest, updateRefreshTojenRequest, logoutRequest, updateDeviceDetails, getUserSafe } = require("../services/userService")
 const jwt = require("jsonwebtoken")
 require("dotenv").config();
 const { accessTokenExpires, refreshTokenExpires } = require("../config.json")
@@ -14,7 +14,6 @@ const userCtrl = {
             res.status(201).send("user craeted successfully");
         }
         catch (error) {
-            console.log(error);
             if (error.errno == 1062) {
                 return res.status(409).json({ msg: "user already exsist", error });
             }
@@ -35,16 +34,37 @@ const userCtrl = {
             res.cookie("refreshCookie", "bearer " + refreshToken, { httpOnly: true, sameSite: "None", secure: true })
 
             await updateRefreshTojenRequest({ id: user.id, token: refreshToken })
-            res.status(200).send("user logged in")
+            await updateDeviceDetails(body)
+            delete user.password;
+            res.status(200).json({ message: "user logged in", user })
         } catch (error) {
-            if (error.errno == 1064) {
-                return next({ status: 400, message: "invalid sql syntax", stack: error })
-            }
-            next({ msg: "internal error" })
+            next({ msg: "internal error", stack: error })
         }
     },
     async showAllConnections(req, res, next) {
         return res.json(req.user.id)
+
+    },
+    async logout(req, res, next) {
+        try {
+            const refreshCookie = req.cookies.refreshCookie
+            const refreshToken = refreshCookie.split(" ")[1];
+            const resp = await logoutRequest(refreshToken);
+            res.cookie("accessCookie", "", { expires: new Date(0) })
+            res.cookie("refreshCookie", "", { expires: new Date(0) })
+            return res.status(200).send("user logged out successfully")
+        } catch (error) {
+            next({ msg: "internal error", stack: error })
+        }
+    },
+    async checkConnection(req, res, next) {
+        try {
+            const user = await getUserSafe(req.user.id);
+            delete user.password
+            res.status(200).json({ message: "user connected", user })
+        } catch (error) {
+            next({ msg: "internal error", stack: error })
+        }
 
     }
 

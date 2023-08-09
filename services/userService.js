@@ -25,6 +25,27 @@ const userService = {
             `, [token, id]
         )
         return res
+    },
+    async updateDeviceDetails({ browserName, browserVersion, browserPlatform }) {
+        const dateNow = new Date();
+        const connectionDate = dateNow.toLocaleDateString() + " " + dateNow.toLocaleTimeString()
+        const res = await pool.query(
+            `insert into device_details (browser_name,browser_version,browser_platform,connection_date)
+            values(?,?,?,?)
+            `, [browserName, browserVersion, browserPlatform, connectionDate]
+        )
+    },
+    async logoutRequest(token) {
+        const res = await pool.query(
+            `delete from tokens 
+                where token=?
+            `, [token]
+        )
+        return res
+    },
+    async getUserSafe(id) {
+        const [[user]] = await pool.query("select id,name,email,role from users where id=?", [id])
+        return user
     }
 
 }

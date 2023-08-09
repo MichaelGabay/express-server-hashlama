@@ -27,7 +27,6 @@ const createTables = async () => {
     }
     catch (error) {
         console.log(error);
-
     }
 }
 createTables();

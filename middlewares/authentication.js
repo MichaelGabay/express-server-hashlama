@@ -8,7 +8,6 @@ const auth = async (req, res, next) => {
     const accessCookie = req.cookies.accessCookie;
     if (!accessCookie) return next(error);
     const accessToken = accessCookie.split(" ")[1];
-
     try {
         const user = jwt.verify(accessToken, process.env.SECRET_KEY)
         req.user = user;
@@ -19,7 +18,6 @@ const auth = async (req, res, next) => {
         if (!refreshCookie) return next(error);
         const refreshToken = refreshCookie.split(" ")[1];
         try {
-            console.log("creating new access token with the refresh token");
             const payload = jwt.verify(refreshToken, process.env.SECRET_KEY);
             req.user = payload;
             const refreshInDB = await checkRefreshToken({ id: payload.id, token: refreshToken })
