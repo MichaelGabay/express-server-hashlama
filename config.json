@@ -1,4 +1,4 @@
 {
     "refreshTokenExpires": "30d",
-    "accessTokenExpires": "1m"
+    "accessTokenExpires": "15m"
 }
