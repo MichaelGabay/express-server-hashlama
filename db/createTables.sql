@@ -13,7 +13,6 @@ create table if not exists tokens (
     id integer primary key auto_increment,
     token varchar(200) not null,
     user_id integer,
-    device_details varchar(200),
     foreign key(user_id) references users(id)
 );
 
@@ -24,5 +23,5 @@ create table if not exists device_details (
     browser_platform varchar(200),
     connection_date varchar(200),
     token_id integer unique,
-    foreign key (token_id) references tokens(id)
+    foreign key (token_id) references tokens(id) ON DELETE CASCADE
 )

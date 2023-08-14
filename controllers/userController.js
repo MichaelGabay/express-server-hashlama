@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { signUpRequest, getUserRequest, updateRefreshTojenRequest, logoutRequest, updateDeviceDetails, getUserSafe } = require("../services/userService")
+const { signUpRequest, getUserRequest, logoutRequest, updateDeviceDetails, getUserSafe, getAllConnectionsRquest, addRefreshToken, endConnectionRequest, endAllConnectionRequest } = require("../services/userService")
 const jwt = require("jsonwebtoken")
 require("dotenv").config();
 const { accessTokenExpires, refreshTokenExpires } = require("../config.json")
@@ -33,8 +33,8 @@ const userCtrl = {
             res.cookie("accessCookie", "bearer " + accessToken, { sameSite: "None", secure: true })
             res.cookie("refreshCookie", "bearer " + refreshToken, { httpOnly: true, sameSite: "None", secure: true })
 
-            await updateRefreshTojenRequest({ id: user.id, token: refreshToken })
-            await updateDeviceDetails(body)
+            const tokenId = await addRefreshToken({ id: user.id, token: refreshToken })
+            await updateDeviceDetails(body, tokenId)
             delete user.password;
             res.status(200).json({ message: "user logged in", user })
         } catch (error) {
@@ -42,7 +42,12 @@ const userCtrl = {
         }
     },
     async showAllConnections(req, res, next) {
-        return res.json(req.user.id)
+        try {
+            const connections = await getAllConnectionsRquest(req.user.id);
+            res.status(200).json(connections)
+        } catch (error) {
+            next({ msg: "internal error", stack: error });
+        }
 
     },
     async logout(req, res, next) {
@@ -66,7 +71,27 @@ const userCtrl = {
             next({ msg: "internal error", stack: error })
         }
 
-    }
+    },
+    async endConnection(req, res, next) {
+        try {
+            await endConnectionRequest(req.query.id)
+            next();
+        } catch (error) {
+            next({ msg: "internal error", stack: error })
+        }
+
+    },
+
+    async endAllConnectios(req, res, next) {
+        try {
+            await endAllConnectionRequest(req.user.id)
+            next();
+        } catch (error) {
+            next({ msg: "internal error", stack: error })
+        }
+
+    },
+
 
 }
 
