@@ -13,14 +13,11 @@ router.use((err, req, res, next) => {
         status: status ? status : "500"
     }
     if (stack) error.stack = stack;
-    if (process.env.MODE == "development") {
-        return res.status(status ?? 500).json(
-            error
-        )
+    if (process.env.MODE == "production") {
+        error.message = "there is error";
+        delete error.stack;
     }
-    error.message = "there is error";
-    delete error.stack;
-    res.status(status).json(
+    return res.status(status ?? 500).json(
         error
     )
 })
